@@ -1,24 +1,46 @@
 #!/usr/bin/ruby
-
 require "socket"
+class IRC
+	def initialize(server,port,nick,opts={})
+		@read,@write = IO.pipe
+		@server,@port,@nick=server,port,nick
+		@opts = {
+			:user => "testing 0 * Testing",
+			:channel => [],
+			}.merge!(opts)
+		serverconnect()
+		pinghandler()
+	end
 
-server = "irc.rizon.net"
-port = "6667"
-nick = "deadBot"
-channel = "#deadSnowman"
+	def serverconnect()
+		@socket = TCPSocket.open(@server,@port)
+		@socket.puts "USER testing 0 * Testing"
+		@socket.puts "NICK #{@nick}"
+		@opts[:channel].each do |chan|
+			@socket.puts "JOIN #{chan}"
+		end
+	end
 
-s = TCPSocket.open(server, port)
-s.puts "USER testing 0 * Testing"
-s.puts "NICK #{nick}"
-s.puts "JOIN #{channel}"
-s.puts "PRIVMSG #{channel} :Hello from deadBot"
-
+	def pinghandler()
+		fork do
+			until @socket.eof? do
+				msg = @socket.gets
+				if msg.match('/^PING :(.*)$/')
+					@socket.puts("PONG #{$~[1]}")
+				else
+					write.puts(msg)
+				end
+			end
+		end
+	end
+end
+=begin
 until s.eof? do
   msg = s.gets
   puts msg
 
   #respond to ping
-  if msg.match(/^PING :(.*)$/)
+  if msg.match('/^PING :(.*)$/')
     s.puts "PONG #{$~[1]}"
     next
   end
@@ -36,4 +58,4 @@ until s.eof? do
   end
 
 end
-
+=end
