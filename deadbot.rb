@@ -8,8 +8,6 @@ nick = "deadBot"
 channel = "#deadSnowman"
 
 s = TCPSocket.open(server, port)
-#print("addr: ", s.addr.join(":"), "\n")
-#print("peer: ", s.peeraddr.join(":"), "\n")
 s.puts "USER testing 0 * Testing"
 s.puts "NICK #{nick}"
 s.puts "JOIN #{channel}"
