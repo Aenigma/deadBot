@@ -1,5 +1,6 @@
 #!/usr/bin/ruby
-require "socket"
+require 'socket'
+require 'yaml'
 class IRC
 	def initialize(server,port,nick,opts={})
 		@read,@write = IO.pipe
@@ -25,7 +26,7 @@ class IRC
 		fork do
 			until @socket.eof? do
 				msg = @socket.gets
-				if msg.match('/^PING :(.*)$/')
+				if msg.match(/^PING :(.*)$/)
 					@socket.puts("PONG #{$~[1]}")
 				else
 					write.puts(msg)

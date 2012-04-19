@@ -1,0 +1,9 @@
+# this is my configuration
+--- 
+- opts: 
+    channel: 
+    - "#deadsnowman"
+    user: testing 0 * Testing
+  port: "6700"
+  nick: deadBot
+  server: irc.rizon.net
