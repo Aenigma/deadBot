@@ -18,10 +18,8 @@ class IRC
 		@socket.puts "USER testing 0 * Testing"
 		@socket.puts "NICK #{@nick}"
 		
-		p "#{@opts[:channel]}"
 		@opts[:channel].each do |chan|
 			@socket.puts "JOIN #{chan}"
-			print "\n\n\n\njoined #{chan}\n\n\n\n"
 		end
 	end
 
