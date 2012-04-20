@@ -17,8 +17,11 @@ class IRC
 		@socket = TCPSocket.open(@server,@port)
 		@socket.puts "USER testing 0 * Testing"
 		@socket.puts "NICK #{@nick}"
+		
+		p "#{@opts[:channel]}"
 		@opts[:channel].each do |chan|
 			@socket.puts "JOIN #{chan}"
+			print "\n\n\n\njoined #{chan}\n\n\n\n"
 		end
 	end
 
@@ -29,10 +32,15 @@ class IRC
 				if msg.match(/^PING :(.*)$/)
 					@socket.puts("PONG #{$~[1]}")
 				else
-					write.puts(msg)
+					@write.puts(msg)
 				end
 			end
+			@socket.puts("QUIT")
 		end
+	end
+
+	def read
+		return @read
 	end
 end
 =begin
