@@ -9,6 +9,7 @@ class IRC
 			:user => "testing 0 * Testing",
 			:channel => [],
 			}.merge!(opts)
+		puts "looks good, about to start trying to connect to the server"
 		serverconnect()
 		pinghandler()
 	end
@@ -31,6 +32,8 @@ class IRC
 					@socket.puts("PONG #{$~[1]}")
 				else
 					@write.puts(msg)
+					#hexdump test
+					#@write.puts(msg.unpack('U'*msg.length).collect {|x| x.to_s 16}.join)
 				end
 			end
 			@socket.puts("QUIT")
