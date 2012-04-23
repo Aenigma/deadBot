@@ -1,6 +1,6 @@
 #! /usr/bin/ruby
-require '../lib/deadlib'
-if !File.exists?("../config.yaml")
+require './lib/deadlib'
+if !File.exists?("./config.yaml")
 	yaml = YAML.dump([
 		{
 			:opts => {
@@ -21,11 +21,11 @@ if !File.exists?("../config.yaml")
 				}
 		}
 		])
-	File.open("../config.yaml","w") do |f|
+	File.open("./config.yaml","w") do |f|
 		f << yaml 
 	end
 else
-	File.open("../config.yaml","r") do |f|
+	File.open("./config.yaml","r") do |f|
 		yaml = f.read
 	end
 end
