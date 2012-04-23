@@ -11,7 +11,7 @@ class IRC
 			}.merge!(opts)
 		puts "looks good, about to start trying to connect to the server"
 		serverconnect()
-		pinghandler()
+		handler()
 	end
 
 	def serverconnect()
@@ -24,7 +24,7 @@ class IRC
 		end
 	end
 
-	def pinghandler()
+	def handler()
 		fork do
 			until @socket.eof? do
 				msg = @socket.gets
