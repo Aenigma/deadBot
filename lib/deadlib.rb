@@ -32,16 +32,20 @@ class IRC
 					@socket.puts("PONG #{$~[1]}")
 				else
 					@write.puts(msg)
-					#hexdump test
-					#@write.puts(msg.unpack('U'*msg.length).collect {|x| x.to_s 16}.join)
 				end
 			end
-			@socket.puts("QUIT")
+			@write.close
 		end
 	end
 
 	def read
 		return @read
+	end
+
+	def close
+		@socket.puts "PART #{@opts[:channel].join(","}"
+		@socket.puts("QUIT")
+		@socket.close
 	end
 end
 =begin
