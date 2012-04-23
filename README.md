@@ -4,11 +4,13 @@ Program is in very early stages.
 
 ## Usage
 
-`config.yaml` which will be created upon the first run. Configure it as needed.
+`config.yaml` will be created upon the first run. Configure it as needed.
 
 Invocation should be from the project directory as so:
 
     ./bin/deadbot
+
+Default behavior is to log to `irc.log`. This cannot be changed as of now. Send C-d to send quit and parts to servers. Whilst the configuration file supports multiple servers, this probably won't work very well in practice.
 
 ## TODO
 
