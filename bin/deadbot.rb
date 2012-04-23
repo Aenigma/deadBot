@@ -1,6 +1,5 @@
 #! /usr/bin/ruby
 require '../lib/deadlib'
-require 'pp'
 if !File.exists?("../config.yaml")
 	yaml = YAML.dump([
 		{
@@ -33,7 +32,6 @@ end
 
 data = YAML.load(yaml)
 irclist = Array.new()
-pp data
 data.each do |hash|
 	irclist << IRC.new(hash[:server],hash[:port],hash[:nick],hash[:opts])
 end
@@ -41,13 +39,20 @@ end
 irclist.each do |irc|
 	fork do
 		until irc.read.eof?
-			print irc.read.gets
+			File.open("irc.log","a") do |f|
+				f << irc.read.gets
+			end
 		end
 	end
 end
 
 until STDIN.getc == nil
 end
+
+irclist.each do |irc|
+	irc.close
+end
+
 
 =begin
 Infinite loop now. but this part should contain code for a basic shell to

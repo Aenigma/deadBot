@@ -43,7 +43,7 @@ class IRC
 	end
 
 	def close
-		@socket.puts "PART #{@opts[:channel].join(","}"
+		@socket.puts "PART #{@opts[:channel].join(",")}"
 		@socket.puts("QUIT")
 		@socket.close
 	end
