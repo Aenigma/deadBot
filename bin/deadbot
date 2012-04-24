@@ -1,5 +1,6 @@
 #! /usr/bin/ruby
 require './lib/deadlib'
+require 'pp'
 if !File.exists?("./config.yaml")
 	yaml = YAML.dump([
 		{
@@ -36,16 +37,18 @@ irclist = Array.new()
 data.each do |hash|
 	irclist << IRC.new(hash[:server],hash[:port],hash[:nick],hash[:opts])
 	
-	#debug
-	puts "IRC.net(" + hash[:server] + "," +  
+=begin	#debug
+	puts "IRC.new(" + hash[:server] + "," +  
 	hash[:port] + "," + 
 	hash[:nick] + "," + 
 	"hash[:opts]" + ")" #hash[:opts] + ")"
 	puts "-----"
+=end
 end
+pp irclist
 
 irclist.each do |irc|
-	fork do
+	pid = fork do
 		until irc.read.eof?
 			File.open("irc.log","a") do |f|
 				f << irc.read.gets

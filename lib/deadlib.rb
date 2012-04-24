@@ -22,9 +22,11 @@ class IRC
 		@socket.puts "NICK #{@nick}"
 		puts "nick is \"" + @nick + "\"" #debug
 
+	end
+
+	def channeljoin()
 		@opts[:channel].each do |chan|
 			@socket.puts "JOIN #{chan}"
-			puts "joining \"" + chan + "\"" #debug
 		end
 	end
 
@@ -34,6 +36,8 @@ class IRC
 				msg = @socket.gets
 				if msg.match(/^PING :(.*)$/)
 					@socket.puts("PONG #{$~[1]}")
+				elsif msg.match(/^:#{@nick}.* MODE #{@nick} :(\+[a-z]*)/)
+					channeljoin()
 				else
 					@write.puts(msg)
 				end
@@ -50,6 +54,7 @@ class IRC
 		@socket.puts "PART #{@opts[:channel].join(",")}"
 		@socket.puts("QUIT")
 		@socket.close
+		@read.close
 	end
 end
 =begin
