@@ -31,9 +31,17 @@ else
 end
 
 data = YAML.load(yaml)
+
 irclist = Array.new()
 data.each do |hash|
 	irclist << IRC.new(hash[:server],hash[:port],hash[:nick],hash[:opts])
+	
+	#debug
+	puts "IRC.net(" + hash[:server] + "," +  
+	hash[:port] + "," + 
+	hash[:nick] + "," + 
+	"hash[:opts]" + ")" #hash[:opts] + ")"
+	puts "-----"
 end
 
 irclist.each do |irc|

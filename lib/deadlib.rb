@@ -9,18 +9,22 @@ class IRC
 			:user => "testing 0 * Testing",
 			:channel => [],
 			}.merge!(opts)
+		puts "looks good, about to start trying to connect to the server"
 		serverconnect()
 		handler()
 	end
 
 	def serverconnect()
 		@socket = TCPSocket.open(@server,@port)
+		puts "opening (" + @server + "," + @port + ")" #debug
+
 		@socket.puts "USER testing 0 * Testing"
 		@socket.puts "NICK #{@nick}"
+		puts "nick is \"" + @nick + "\"" #debug
 
 		@opts[:channel].each do |chan|
 			@socket.puts "JOIN #{chan}"
-			puts "#{chan}"
+			puts "joining \"" + chan + "\"" #debug
 		end
 	end
 
