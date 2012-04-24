@@ -40,7 +40,7 @@ irclist.each do |irc|
 	fork do
 		until irc.read.eof?
 			File.open("irc.log","a") do |f|
-				f << irc.read.gets
+				f << irc.read.read
 			end
 		end
 	end
