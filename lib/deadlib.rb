@@ -9,7 +9,6 @@ class IRC
 			:user => "testing 0 * Testing",
 			:channel => [],
 			}.merge!(opts)
-		puts "looks good, about to start trying to connect to the server"
 		serverconnect()
 		handler()
 	end
@@ -31,7 +30,11 @@ class IRC
 	end
 
 	def handler()
-		fork do
+		@handlerpid = fork do
+			Signal.trap("HUP") do
+				warn "Force closing \"#{@server}\" handler"
+				exit
+			end
 			until @socket.eof? do
 				msg = @socket.gets
 				if msg.match(/^PING :(.*)$/)
@@ -43,6 +46,7 @@ class IRC
 				end
 			end
 			@write.close
+			exit
 		end
 	end
 
@@ -55,6 +59,8 @@ class IRC
 		@socket.puts("QUIT")
 		@socket.close
 		@read.close
+		Process.kill("HUP",@handlerpid)
+		Process.wait
 	end
 end
 =begin

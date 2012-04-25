@@ -1,5 +1,6 @@
 #! /usr/bin/ruby
 require './lib/deadlib'
+require 'optparse'
 require 'pp'
 if !File.exists?("./config.yaml")
 	yaml = YAML.dump([
@@ -46,9 +47,10 @@ data.each do |hash|
 =end
 end
 pp irclist
-
+pid = Array.new
 irclist.each do |irc|
-	pid = fork do
+	pid << fork do
+		Signal.trap("HUP") { warn "Force closing driver io relay" ; exit }
 		until irc.read.eof?
 			File.open("irc.log","a") do |f|
 				f << irc.read.gets
@@ -63,7 +65,10 @@ end
 irclist.each do |irc|
 	irc.close
 end
-
+pid.each do |p|
+	Process.kill("HUP",p)
+	Process.wait
+end
 
 =begin
 Infinite loop now. but this part should contain code for a basic shell to
