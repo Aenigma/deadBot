@@ -14,7 +14,6 @@ module IRC
 		attr_accessor :thread
 		def initialize(server,port,nick,opts={})
 			@thread = nil
-			@semaphore = Mutex.new
 			@server,@port,@nick=server,port,nick
 			@opts = {
 				:user => "#{@nick} 0 * #{@nick}",
