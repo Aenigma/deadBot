@@ -1,51 +1,118 @@
 #!/usr/bin/ruby
 require 'socket'
-require 'yaml'
-class IRC
-	def initialize(server,port,nick,opts={})
-		@read,@write = IO.pipe
-		@server,@port,@nick=server,port,nick
-		@opts = {
-			:user => "testing 0 * Testing",
-			:channel => [],
-			}.merge!(opts)
-		serverconnect()
-		handler()
+require 'logger'
+module IRC
+	@@logger = Logger.new("deadbot.log")
+	
+	def self.logger
+		@@logger
 	end
 
-	def serverconnect()
-		@socket = TCPSocket.open(@server,@port)
-		@socket.puts "USER testing 0 * Testing"
-		@socket.puts "NICK #{@nick}"
-
-		@opts[:channel].each do |chan|
-			@socket.puts "JOIN #{chan}"
-			puts "#{chan}"
+	class DeadBot
+		THREAD_JOIN_WAIT = 5
+		RECONNECT_DELAY = 20
+		attr_accessor :thread
+		def initialize(server,port,nick,opts={})
+			@thread = nil
+			@semaphore = Mutex.new
+			@server,@port,@nick=server,port,nick
+			@opts = {
+				:user => "#{@nick} 0 * #{@nick}",
+				:channel => [],
+				:logfile => self.to_s + ".log"
+				}.merge!(opts)
+			serverconnect()
+			handler()
 		end
-	end
 
-	def handler()
-		fork do
-			until @socket.eof? do
-				msg = @socket.gets
-				if msg.match(/^PING :(.*)$/)
-					@socket.puts("PONG #{$~[1]}")
-				else
-					@write.puts(msg)
-				end
+		def serverconnect()
+			@socket = TCPSocket.open(@server,@port)
+			write "USER #{@opts[:user]}"
+			write "NICK #{@nick}"
+
+			@opts[:channel].each do |chan|
+				write "JOIN #{chan}"
+				IRC::logger.info "#{self.to_s} joined #{chan}"
 			end
-			@write.close
 		end
-	end
 
-	def read
-		return @read
-	end
+		def handler()
+			@thread = Thread.new do
+				while msg = self.read
+					if msg.chomp.match(/^PING :(.*)$/)
+						write "PONG #{$~[1]}"
+						IRC::logger.debug "#{self.to_s} responded to PING with #{$~[0]}"
+					elsif msg.chomp.match /^ERROR :Trying to reconnect too fast\.$/
+						IRC::logger.info "#{self.to_s} got error: #{$~[0]}"
+						self.close
+						Thread.new do
+							IRC::logger.debug "#{self.to_s} waiting to reconnect..."
+							self.join
+							sleep RECONNECT_DELAY
+							IRC::logger.debug "#{self.to_s} trying to reconnect..."
+							self.serverconnect
+							self.handler
+							IRC::logger.info "#{self.to_s} has reconnected"
+						end
+					else
+						File.open(@opts[:logfile],"a") do |f|
+							f.puts msg.chomp
+						end
+					end
+				end
+				closesocket
+			end
+		end
+		
+		def closesocket
+			IRC::logger.debug "attempting to close #{self.to_s}..."
+			IRC::logger.debug "closing #{self.to_s}..."
+			@socket.close
+			IRC::logger.debug "finished closing #{self.to_s}"
+		end
+		
+		def read
+			begin
+				@socket.gets
+			rescue Exception => e
+				IRC::logger.error "#{self.to_s} has gotten an exception: #{e.to_s}#{e.backtrace}"
+			end
+		end
+		
+		def write(obj)
+			begin
+				@socket.puts obj.to_str
+			rescue Exception => e
+				IRC::logger.error "#{self.to_s} has gotten an exception: #{e.to_s}#{e.backtrace}"
+			end
+		end
+		
+		def close
+			IRC::logger.debug "#{self.to_s} close method called..."
+			begin
+				write "PART #{@opts[:channel].join(",")}"
+				write "QUIT"
+			rescue
+				IRC::logger.error "#{self.to_s} has gotten an exception: #{e.to_s}#{e.backtrace}"
+			end
+			IRC::logger.info "#{self.to_s} has parted and quit."
+		end
+		
+		def join
+			IRC::logger.debug "#{@self.to_s} waiting for thread to finish..."
+			@thread.join THREAD_JOIN_WAIT
+			if @thread.alive?
+				IRC::logger.info "#{@self.to_s} thread is finished."
+			else
+				IRC::logger.warn "#{@self.to_s} thread timed out to finish..."
+				@thread.kill
+				IRC::logger.warn "#{@self.to_s} thread was killed"
+			end
+		end
 
-	def close
-		@socket.puts "PART #{@opts[:channel].join(",")}"
-		@socket.puts("QUIT")
-		@socket.close
+		def to_s
+			"#{@nick}@#{@server}"
+		end
 	end
 end
 =begin

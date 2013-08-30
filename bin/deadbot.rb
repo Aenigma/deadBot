@@ -1,22 +1,22 @@
 #! /usr/bin/ruby
 require './lib/deadlib'
+require 'yaml'
 if !File.exists?("./config.yaml")
+	puts "No config found; installing default config file."
 	yaml = YAML.dump([
 		{
 			:opts => {
-				:user => "testing 0 * Testing",
 				:channel => [ "#deadsnowman","#deadsnowman2" ]
 				},
-			:nick=>"deadBot",
+			:nick=>"deadBotTest",
 			:port => "6667",
 			:server => "irc.rizon.net"
 		},
 		{
 			:server => "irc.rizon.net",
 			:port => "6667",
-			:nick => "aenigmabot",
+			:nick => "aenigmaBotTest",
 			:opts => {
-				:user => "testing 0 * Testing",
 				:channel => ["#deadsnowman" ]
 				}
 		}
@@ -33,29 +33,16 @@ end
 data = YAML.load(yaml)
 irclist = Array.new()
 data.each do |hash|
-	irclist << IRC.new(hash[:server],hash[:port],hash[:nick],hash[:opts])
+	irclist << IRC::DeadBot.new(hash[:server],hash[:port],hash[:nick],hash[:opts])
 end
 
-irclist.each do |irc|
-	fork do
-		until irc.read.eof?
-			File.open("irc.log","a") do |f|
-				f << irc.read.gets
-			end
-		end
-	end
+until STDIN.gets.chomp == "exit"
+	puts "invalid command: #{$_}"
 end
 
-until STDIN.getc == nil
-end
+puts "got exit..."
 
 irclist.each do |irc|
 	irc.close
+	irc.join
 end
-
-
-=begin
-Infinite loop now. but this part should contain code for a basic shell to
-allow using the bot as a client for manual commands such as to shut down
-and start more clients.
-=end
