@@ -75,6 +75,7 @@ module IRC
 				@socket.gets
 			rescue Exception => e
 				IRC::logger.error "#{self.to_s} has gotten an exception: #{e.to_s}#{e.backtrace}"
+				return nil
 			end
 		end
 		
@@ -98,14 +99,14 @@ module IRC
 		end
 		
 		def join
-			IRC::logger.debug "#{@self.to_s} waiting for thread to finish..."
+			IRC::logger.debug "#{self.to_s} waiting for thread to finish..."
 			@thread.join THREAD_JOIN_WAIT
 			if @thread.alive?
-				IRC::logger.info "#{@self.to_s} thread is finished."
+				IRC::logger.info "#{self.to_s} thread is finished."
 			else
-				IRC::logger.warn "#{@self.to_s} thread timed out to finish..."
+				IRC::logger.warn "#{self.to_s} thread timed out to finish..."
 				@thread.kill
-				IRC::logger.warn "#{@self.to_s} thread was killed"
+				IRC::logger.warn "#{self.to_s} thread was killed"
 			end
 		end
 
